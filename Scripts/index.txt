@@ -1,0 +1,106 @@
+create index idxpontos on stats using gin(pontos);
+analyze stats;
+explain analyze select * from stats where pontos>45;
+"Bitmap Heap Scan on stats  (cost=20.11..60.16 rows=14 width=72) (actual time=0.051..0.055 rows=6 loops=1)"
+
+"  Recheck Cond: (pontos > 45)"
+"  Heap Blocks: exact=6"
+
+"  ->  Bitmap Index Scan on idxpontos  (cost=0.00..20.11 rows=14 width=0) (actual time=0.044..0.044 rows=6 loops=1)"
+
+"        Index Cond: (pontos > 45)"
+"Planning time: 0.242 ms"
+"Execution time: 0.111 ms"
+
+
+create index jogfktime on jogador(timefk);
+analyze jogador;
+explain analyze select * from jogador where timefk='HOU';
+"Bitmap Heap Scan on jogador  (cost=4.46..70.92 rows=24 width=56) (actual time=0.069..0.079 rows=24 loops=1)"
+
+"  Recheck Cond: ((timefk)::text = 'HOU'::text)"
+"  Heap Blocks: exact=7"
+
+"  ->  Bitmap Index Scan on jogfktime  (cost=0.00..4.46 rows=24 width=0) (actual time=0.064..0.064 rows=24 loops=1)"
+
+"        Index Cond: ((timefk)::text = 'HOU'::text)"
+"Planning time: 0.291 ms"
+"Execution time: 0.109 ms"
+
+create index timecasapartfk on partida(timecasa);
+analyze partida;
+explain analyze select * from partida where timecasa='GSW';
+"Bitmap Heap Scan on partida  (cost=4.60..13.11 rows=41 width=24) (actual time=0.104..0.120 rows=41 loops=1)"
+
+"  Recheck Cond: ((timecasa)::text = 'GSW'::text)"
+"  Heap Blocks: exact=8"
+
+"  ->  Bitmap Index Scan on timecasapartfk  (cost=0.00..4.59 rows=41 width=0) (actual time=0.094..0.094 rows=41 loops=1)"
+
+"        Index Cond: ((timecasa)::text = 'GSW'::text)"
+"Planning time: 0.313 ms"
+"Execution time: 0.163 ms"
+
+create index timevisitpartfk on partida(timevisit);
+analyze partida;
+explain analyze select * from partida where timecasa='LAL';
+"Bitmap Heap Scan on partida  (cost=4.60..13.11 rows=41 width=24) (actual time=0.051..0.072 rows=41 loops=1)"
+
+"  Recheck Cond: ((timecasa)::text = 'LAL'::text)"
+"  Heap Blocks: exact=8"
+
+"  ->  Bitmap Index Scan on timecasapartfk  (cost=0.00..4.59 rows=41 width=0) (actual time=0.037..0.037 rows=41 loops=1)"
+
+"        Index Cond: ((timecasa)::text = 'LAL'::text)"
+"Planning time: 0.136 ms"
+"Execution time: 0.107 ms"
+
+*como os 2 indices da chave estrangeira da partida(timecasapartfk e timevisitpartfk) contem os mesmos dados no explain ele usa apenas um indice*
+
+create index mvpfk on playoffs(MVP);
+analyze playoffs;
+explain analyze select * from playoffs where MVP=70;
+"Seq Scan on playoffs  (cost=0.00..2.03 rows=1 width=36) (actual time=0.019..0.019 rows=0 loops=1)"
+
+"  Filter: (mvp = 2)"
+"  Rows Removed by Filter: 82"
+"Planning time: 0.070 ms"
+"Execution time: 0.030 ms"
+*como a tabela playoffs só tem 82 jogos o Seq Scan prevalece diante do indice, mas caso essa tabela ganhasse um numero consideravel de tuplas o indice será usado*
+
+create index vittime on time(n_vit);
+analyze time;
+explain analyze select * from time where n_vit>50;
+"Bitmap Heap Scan on "time"  (cost=4.18..20.17 rows=5 width=78) (actual time=0.025..0.026 rows=5 loops=1)"
+
+"  Recheck Cond: (n_vit > 50)"
+"  Heap Blocks: exact=1"
+
+"  ->  Bitmap Index Scan on vittime  (cost=0.00..4.17 rows=5 width=0) (actual time=0.021..0.021 rows=5 loops=1)"
+
+"        Index Cond: (n_vit > 50)"
+"Planning time: 0.257 ms"
+"Execution time: 0.054 ms"
+
+create index dertime on time(n_der);
+analyze time;
+explain analyze select * from time where n_der>50;
+"Bitmap Heap Scan on "time"  (cost=4.21..30.50 rows=9 width=78) (actual time=0.034..0.037 rows=9 loops=1)"
+
+"  Recheck Cond: (n_der > 50)"
+"  Heap Blocks: exact=2"
+
+"  ->  Bitmap Index Scan on dertime  (cost=0.00..4.21 rows=9 width=0) (actual time=0.028..0.028 rows=9 loops=1)"
+
+"        Index Cond: (n_der > 50)"
+"Planning time: 0.266 ms"
+"Execution time: 0.071 ms"
+
+create index nummvp on jogador(totalmvp);
+analyze jogador;
+explain analyze select * from jogador where totalmvp>5 and totalmvp<10;
+"Index Scan using nummvp on jogador  (cost=0.28..8.54 rows=2 width=56) (actual time=0.006..0.008 rows=2 loops=1)"
+
+"  Index Cond: ((totalmvp > 5) AND (totalmvp < 10))"
+"Planning time: 0.480 ms"
+"Execution time: 0.028 ms"

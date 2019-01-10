@@ -1,0 +1,58 @@
+--Definir confrontos dos playoffs
+
+CREATE OR REPLACE FUNCTION definirplayoff()
+RETURNS VOID as $$
+DECLARE
+	C1_oeste CURSOR FOR SELECT idtime FROM cla8lestedesc;
+	C2_oeste CURSOR FOR SELECT idtime FROM cla8lesteasc;
+	C1_leste CURSOR FOR SELECT idtime FROM cla8oestedesc;
+	C2_leste CURSOR FOR SELECT idtime FROM cla8oesteasc;
+	a varchar(3);
+	b varchar(3);
+BEGIN
+	OPEN C1_oeste;
+	OPEN C2_oeste;
+	FOR i IN 1..4 LOOP
+		FETCH C1_oeste INTO a;
+		FETCH C2_oeste INTO b;
+		insert into playoffs(idplay, timevisit, timecasa) values(i, b, a);
+	END LOOP;
+	CLOSE C1_oeste;
+	CLOSE C2_oeste;
+	OPEN C1_leste;
+	OPEN C2_leste;
+	FOR i IN 5..8 LOOP
+		FETCH C1_leste INTO a;
+		FETCH C2_leste INTO b;
+		insert into playoffs(idplay, timevisit, timecasa) values(i, b, a);
+	END LOOP;
+	CLOSE C1_leste;
+	CLOSE C2_leste;
+RETURN;
+END;
+$$ language plpgsql;
+
+
+--Mostrar as 5 partidas que um determiando jogador mais fez pontos
+
+CREATE OR REPLACE FUNCTION toppartidas(idjogador integer) 
+RETURNS TABLE(nome varchar(40), pontos integer, visitante varchar(3), casa varchar(3), datapart date) AS $$
+BEGIN
+	RETURN QUERY SELECT jogador.nomejog, stats.pontos, partida.timevisit, partida.timecasa, partida.datapart
+	FROM jogador, stats, partida WHERE stats.idjogadorfk=idjogador 
+	AND jogador.idjog=idjogador AND stats.idpartfk=partida.idpart ORDER BY stats.pontos DESC LIMIT 5; 
+END;
+$$ language plpgsql;
+
+
+--Mostrar todos os confrontos entre dois times
+
+CREATE OR REPLACE FUNCTION confrontos(visitante varchar(3), casa varchar(3))
+RETURNS TABLE(timevisitante varchar(40), timecasa varchar(40), pontosvisitante integer, pontoscasa integer) AS $$
+BEGIN
+	RETURN QUERY SELECT partida.timevisit, partida.timecasa, partida.pontosvisit, partida.pontoscasa, partida.datapart
+	FROM partida WHERE (partida.timevisit=visitante AND partida.timecasa=casa) OR 
+	(partida.timecasa=visitante AND partida.timevisit=casa);
+END;
+$$ language plpgsql;
+

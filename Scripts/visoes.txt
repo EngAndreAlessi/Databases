@@ -1,0 +1,38 @@
+--Mostra todos os jogadores que fizeram triplo duplo no campeonato(mais de 2 digitos em rebotes, assistencias e pontos)
+
+CREATE OR REPLACE VIEW TriploDuplo AS SELECT jogador.nomejog, stats.pontos, stats.rebote, stats.assist
+FROM stats, jogador where stats.idjogadorfk=jogador.idjog and stats.pontos>9 and stats.rebote>9 and stats.assist>9;
+
+
+--Mostra os 10 jogadores que tem a melhor média de pontos por jogo
+
+CREATE OR REPLACE VIEW top10pontos AS SELECT jogador.nomejog, (jogador.totalpontos/jogador.totalpartidas) AS ppj 
+FROM jogador WHERE jogador.totalpartidas>0 ORDER BY ppj DESC LIMIT 10; 
+
+
+--Mostra o ranking de jogadores que já foram MVP
+
+CREATE OR REPLACE VIEW rankmvp AS SELECT jogador.nomejog, jogador.totalmvp FROM jogador WHERE jogador.totalmvp>0 ORDER BY jogador.totalmvp DESC;
+
+
+--Classificação do campeonato na conferencia leste
+
+CREATE OR REPLACE VIEW classificacaoleste AS SELECT time.idtime, time.n_jogos, time.n_vit, time.n_der FROM time 
+WHERE time.conferencia='Leste' ORDER BY time.n_vit DESC, time.idtime ASC;
+
+
+--Classificação do campeonato na conferencia oeste
+
+CREATE OR REPLACE VIEW classificacaooeste AS SELECT time.idtime, time.n_jogos, time.n_vit, time.n_der FROM time 
+WHERE time.conferencia='Oeste' ORDER BY time.n_vit DESC, time.idtime DESC;
+
+
+--Visões usadas na função definir playoffs
+
+CREATE OR REPLACE VIEW cla8lestedesc AS SELECT idtime, n_vit FROM classificacaoleste LIMIT 8;
+
+CREATE OR REPLACE VIEW cla8lesteasc AS SELECT idtime, n_vit FROM cla8lestedesc ORDER BY n_vit ASC, idtime DESC;
+
+CREATE OR REPLACE VIEW cla8oestedesc AS SELECT idtime, n_vit FROM classificacaooeste LIMIT 8;
+
+CREATE OR REPLACE VIEW cla8oesteasc AS SELECT idtime, n_vit FROM cla8oestedesc ORDER BY n_vit ASC, idtime ASC;

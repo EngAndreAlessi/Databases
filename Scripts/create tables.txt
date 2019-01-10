@@ -1,0 +1,100 @@
+create table time (
+	idtime varchar(3) primary key,
+	nometime varchar(40) not null,
+	cidade varchar(40) not null,
+	treinador varchar(40) not null,
+	arena varchar(40) not null,
+	conferencia varchar(5) not null,
+	n_vit integer default 0 check (n_vit<=82),
+	n_der integer default 0 check (n_der<=82),
+	n_jogos integer default 0 check (n_jogos<=82)
+);
+
+create table jogador(
+	idjog serial primary key,
+	nomejog varchar(40) not null,
+	numero integer,
+	posicao varchar(2) not null,
+	altura numeric(3,2) not null,
+	peso integer not null,
+	datanasc date not null,
+	pais varchar(2) not null,
+	timefk varchar(3) not null,
+	totalpartidas integer default 0,
+	totalpontos integer default 0,
+	totalmvp integer default 0,
+	foreign key (timefk) references time (idtime)
+);
+
+create table partida(
+	idpart serial primary key,
+	timevisit varchar(3) not null,
+	timecasa varchar(3) not null,
+	pontosvisit integer not null,
+	pontoscasa integer not null,
+	datapart date not null,
+	foreign key (timecasa) references time(idtime),
+	foreign key (timevisit) references time(idtime)
+);
+
+create table stats (
+	idpartfk integer,
+	idjogadorfk integer,
+	acerto_cesta2 integer default 0,
+	tentativa_cesta2 integer default 0,
+	percentual_cesta2 numeric (4,3) default 0,
+	acerto_cesta3 integer default 0,
+	tentativa_cesta3 integer default 0,
+	percentual_cesta3 numeric (4,3) default 0,
+	acerto_lancelivre integer default 0,
+	tentativa_lancelivre integer default 0,
+	percentual_lancelivre numeric (4,3) default 0,
+	rebote integer default 0,
+	assist integer default 0,
+	roubo integer default 0,
+	bloqueio integer default 0,
+	erro integer default 0,
+	faltas integer default 0,
+	pontos integer default 0,
+	primary key (idpartfk, idjogadorfk),
+	foreign key (idpartfk) references partida (idpart),
+	foreign key (idjogadorfk) references jogador (idjog)
+);
+
+create table playoffs(
+	idplay serial primary key,
+	timevisit varchar(3) not null,
+	timecasa varchar(3) not null,
+	pontosvisit integer,
+	pontoscasa integer,
+	datapart date,
+	fase varchar(30),
+	MVP integer,
+	foreign key (timecasa) references time(idtime),
+	foreign key (timevisit) references time(idtime),
+	foreign key (MVP) references jogador (idjog)
+);
+
+create table statsplayoff (
+	idplayfk integer,
+	idjogadorfk integer,
+	acerto_cesta2 integer default 0,
+	tentativa_cesta2 integer default 0,
+	percentual_cesta2 numeric (4,3) default 0,
+	acerto_cesta3 integer default 0,
+	tentativa_cesta3 integer default 0,
+	percentual_cesta3 numeric (4,3) default 0,
+	acerto_lancelivre integer default 0,
+	tentativa_lancelivre integer default 0,
+	percentual_lancelivre numeric (4,3) default 0,
+	rebote integer default 0,
+	assist integer default 0,
+	roubo integer default 0,
+	bloqueio integer default 0,
+	erro integer default 0,
+	faltas integer default 0,
+	pontos integer default 0,
+	primary key (idplayfk, idjogadorfk),
+	foreign key (idplayfk) references playoffs (idplay),
+	foreign key (idjogadorfk) references jogador (idjog)
+);

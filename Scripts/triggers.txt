@@ -1,0 +1,52 @@
+--após cada partida atualiza o numero de jogos, vitorias e derrotas dos times envolvidos
+
+CREATE OR REPLACE FUNCTION att_time()
+RETURNS trigger AS $$
+BEGIN
+	IF(NEW.pontosvisit>NEW.pontoscasa) THEN
+		UPDATE time SET n_vit=n_vit+1 WHERE NEW.timevisit=idtime;
+		UPDATE time SET n_der=n_der+1 WHERE NEW.timecasa=idtime;
+	ELSE 
+		UPDATE time SET n_vit=n_vit+1 WHERE NEW.timecasa=idtime;
+		UPDATE time SET n_der=n_der+1 WHERE NEW.timevisit=idtime;
+	END IF;
+		UPDATE time SET n_jogos=n_jogos+1 WHERE NEW.timevisit=idtime;
+		UPDATE time SET n_jogos=n_jogos+1 WHERE NEW.timecasa=idtime;
+	RETURN NULL; 
+END;
+$$ language plpgsql;
+
+CREATE TRIGGER attvit	
+AFTER INSERT ON partida
+FOR EACH ROW EXECUTE PROCEDURE att_time();
+
+
+--após cada partida atualiza a quantidade de jogos e pontos feitos dos jogadores envolvidos
+
+CREATE OR REPLACE FUNCTION att_jogador()
+RETURNS trigger AS $$
+BEGIN
+	UPDATE jogador SET totalpartidas=totalpartidas+1 WHERE idjog=NEW.idjogadorfk;
+	UPDATE jogador SET totalpontos=totalpontos+NEW.pontos WHERE idjog=NEW.idjogadorfk;
+	RETURN NULL;
+END;
+$$ language plpgsql;
+
+CREATE TRIGGER attjogador
+AFTER INSERT ON stats
+FOR EACH ROW EXECUTE PROCEDURE att_jogador();
+
+
+--após uma partida de playoffs atualiza o contador de MVP(melhor jogador da partida) 
+
+CREATE OR REPLACE FUNCTION att_mvp()
+RETURNS trigger AS $$
+BEGIN
+	UPDATE jogador SET totalmvp=totalmvp+1 WHERE NEW.MVP=idjog;
+	RETURN NULL;
+END;
+$$ language plpgsql;
+
+CREATE TRIGGER attmvp
+AFTER INSERT ON playoffs
+FOR EACH ROW EXECUTE PROCEDURE att_mvp();
